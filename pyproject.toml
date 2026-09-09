@@ -10,5 +10,10 @@ dependencies = [
     "mistralai[realtime]>=2.9.4",
     "numpy>=2.0.0",
     "python-dotenv>=1.2.3",
+    "python-multipart>=0.0.32",
     "uvicorn[standard]>=0.52.4",
 ]
+
+[[tool.uv.index]]
+url = "https://socket-registry.mistralai.com/pypi/simple/"
+default = true

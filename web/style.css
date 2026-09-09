@@ -63,8 +63,17 @@
   --orange-light: #ff8204;
   --red: #e51300;
   --red-dark: #c4001d;
+  --green: #3ddc84;
 
   --font: "ALTMistral", "Inter", sans-serif;
+
+  /* #video-panel is a fixed size - it never shrinks or grows with the window.
+     --panels-top-offset (header + main's top padding) is how far the panels
+     sit from the viewport top; #results-panel uses it to cap its own height
+     at the bottom of the window. Keep it in sync if that chrome's sizing
+     changes materially. */
+  --video-panel-height: 400px;
+  --panels-top-offset: 109px;
 }
 
 * {
@@ -103,7 +112,7 @@ header {
 .wordmark {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
 }
 
 /* The Mistral pixel-cat mark - the one place this page borrows the
@@ -122,14 +131,7 @@ header {
 .controls {
   display: flex;
   align-items: center;
-  gap: 20px;
-}
-
-#status {
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
+  gap: 12px;
 }
 
 button {
@@ -161,6 +163,85 @@ button:disabled {
   cursor: default;
 }
 
+.switch-label {
+  font-family: var(--font);
+  font-size: 18px;
+  font-weight: 600;
+  margin-top: -1px;
+  color: var(--orange-light);
+  cursor: pointer;
+  user-select: none;
+}
+
+/* An ON/OFF switch, not a push-button - reset the generic button's padding,
+   layout, and color so only the track + thumb + ON/OFF text below are visible. */
+.switch {
+  position: relative;
+  flex: none;
+  display: block;
+  width: 72px;
+  height: 30px;
+  padding: 0;
+  border-radius: 999px;
+  background: var(--border);
+  transition: background-color 0.15s ease-out;
+}
+
+/* The ON/OFF text - swaps content and side via the [aria-checked] selectors
+   below, always on whichever side the thumb isn't currently covering. */
+.switch::before {
+  content: "OFF";
+  position: absolute;
+  top: 0;
+  right: 9px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--text);
+}
+
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  transition: transform 0.15s ease-out;
+}
+
+.switch[aria-checked="true"] {
+  background: var(--green);
+}
+
+.switch[aria-checked="true"]::before {
+  content: "ON";
+  right: auto;
+  left: 9px;
+  color: #100d0a; /* dark - var(--text) doesn't have enough contrast on the light green */
+}
+
+.switch[aria-checked="true"]::after {
+  transform: translateX(42px);
+}
+
+.switch:hover {
+  filter: brightness(1.15);
+}
+
+.switch:disabled {
+  opacity: 0.5;
+  cursor: default;
+  filter: none;
+}
+
 main {
   display: grid;
   grid-template-columns: 1.4fr 1fr;
@@ -174,29 +255,97 @@ main {
   }
 }
 
+.video-column {
+  display: flex;
+  flex-direction: column;
+}
+
 #video-panel {
   border: 1px solid var(--border);
   background: #000;
-  height: 70vh;
+  height: var(--video-panel-height);
   display: flex;
   align-items: center;
 }
 
-video {
-  display: block;
-  width: 100%;
+#upload-section {
+  margin-top: 60px;
 }
 
-@media (max-width: 900px) {
-  #video-panel {
-    height: auto;
+.upload-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 16px;
+  background: var(--muted);
+  color: #100d0a;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.12s ease-out;
+}
+
+.upload-button:hover {
+  background: var(--orange-light);
+}
+
+#upload-dialog {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 24px 32px;
+}
+
+#upload-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.upload-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font);
+  font-size: 14px;
+}
+
+.spinner {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--orange);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
+}
+
+video {
+  display: block;
+  /* width/height 100% + cover (not max-width/max-height) so the video always
+     exactly fills #video-panel at any panel height, cropping instead of
+     letterboxing - max-width/max-height let it shrink to fit fully inside a
+     short panel instead, which reads as the video shrinking faster than its
+     own container the shorter the panel gets. */
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 #results-panel {
   border: 1px solid var(--border);
   background: var(--bg);
-  height: 70vh;
+  /* Extends up to 250px past the bottom of the video, but never past the
+     bottom of the window. */
+  height: min(calc(var(--video-panel-height) + 250px), calc(100vh - var(--panels-top-offset)));
   overflow-y: auto;
   padding: 16px;
   scrollbar-color: var(--border) transparent;
@@ -219,7 +368,7 @@ video {
 }
 
 .card {
-  border: 1px solid var(--border);
+  border: 1px solid #3a3a40;
   padding: 16px;
   margin-bottom: 12px;
   animation: fade-up 0.2s ease-out;
@@ -240,24 +389,32 @@ video {
   font-weight: 600;
   margin-bottom: 10px;
   max-width: 60ch;
+  letter-spacing: 0.3px;
+}
+
+.verdict-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 10px;
 }
 
 .badge {
-  display: inline-block;
+  flex: none;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   padding: 4px 8px;
+  margin-top: 2px;
   border-radius: 4px;
-  margin-bottom: 10px;
   background: var(--border);
   color: var(--text);
 }
 
 .badge-true,
 .badge-likely-true {
-  background: var(--orange);
+  background: var(--green);
   color: #100d0a;
 }
 
@@ -268,27 +425,53 @@ video {
 }
 
 .reasoning {
-  color: var(--text);
+  font-family: "Inter", sans-serif;
+  color: #eee;
   font-size: 14px;
-  line-height: 1.5;
-  margin-bottom: 12px;
+  line-height: 1.3;
   max-width: 60ch;
 }
 
-.fact-label {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 6px;
-}
-
 .fact {
+  font-family: "Inter", sans-serif;
   font-size: 14px;
   line-height: 1.5;
   color: var(--orange-light);
   max-width: 60ch;
+  margin: 8px 0 0;
+}
+
+.fact-toggle summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  user-select: none;
+  list-style: none; /* Firefox's default disclosure triangle */
+}
+
+.fact-toggle summary::-webkit-details-marker {
+  display: none; /* Chrome/Safari's default disclosure triangle */
+}
+
+.fact-toggle summary:hover {
+  color: var(--text);
+}
+
+.fact-toggle .chevron {
+  flex: none;
+  transition: transform 0.15s ease-out;
+}
+
+.fact-toggle[open] .chevron {
+  transform: rotate(180deg);
 }
 
 /* Decorative ground-level scene; the source art is mostly empty night sky,
@@ -298,7 +481,7 @@ footer {
   height: 220px;
   margin-top: 24px;
   background-image: url("img/Footer_Dark_Mode.png");
-  background-size: cover;
+  background-size: contain;
   background-position: bottom center;
   background-repeat: no-repeat;
 }
