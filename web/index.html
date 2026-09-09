@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fact Checker</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <div class="wordmark">
+      <img class="logo-mark" src="img/Icon-L-Cat-Laying-tail-up-Orange.svg" alt="" width="32" height="32" />
+      <span class="wordmark-text">Fact Checker</span>
+    </div>
+    <div class="controls">
+      <span id="status">Ready</span>
+      <button id="start-button">
+        <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M3 1.5v13l11-6.5-11-6.5z" /></svg>
+        Start
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section id="video-panel">
+      <video id="video" src="video/claims.mp4" controls playsinline></video>
+    </section>
+
+    <section id="results-panel">
+      <div id="results-empty">Click the "Start" button above to start the demo.</div>
+      <div id="results-list"></div>
+    </section>
+  </main>
+
+  <footer></footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

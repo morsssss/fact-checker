@@ -1,0 +1,30 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Secrets
+.env
+
+# Generated vector db (regenerate with server/process_source_of_truth.py)
+server/embeddings.npy
+server/facts.json
+
+# Things we are keeping to ourselves
+.claude/
+.impeccable/
+PRODUCT.md
+spec.md
+railway.json
+
+# Testing files
+assets/ben-babbles.m4a
+
+# Junque
+.DS_Store

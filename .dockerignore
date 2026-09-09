@@ -1,0 +1,15 @@
+.venv
+.env
+__pycache__/
+*.py[oc]
+.git
+.DS_Store
+
+# Generated vector db - rebuilt automatically at container startup.
+server/embeddings.npy
+server/facts.json
+
+# Dev/test-only assets not needed by the deployed web app.
+assets/ben-babbles.m4a
+assets/test-video-8-25-26.mov
+assets/test-transcription-8-25-26.txt
