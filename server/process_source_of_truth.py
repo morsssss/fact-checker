@@ -2,7 +2,7 @@
 One-time step: turn a source-of-truth file into a vector database.
 
 Usage:
-    uv run server/process_source_of_truth.py [path/to/facts.csv]
+    uv run server/process_source_of_truth.py [path/to/facts.tsv]
 
 Reads a source-of-truth file (one fact per line, tab-separated: fact text,
 then an optional source name, then an optional source URL), embeds each
@@ -21,7 +21,7 @@ import numpy as np
 
 from common import EMBEDDING_MODEL, get_client, load_facts
 
-DEFAULT_FACTS_PATH = "assets/facts.csv"
+DEFAULT_FACTS_PATH = "assets/facts.tsv"
 EMBEDDINGS_PATH = os.path.join(os.path.dirname(__file__), "embeddings.npy")
 FACTS_INDEX_PATH = os.path.join(os.path.dirname(__file__), "facts.json")
 

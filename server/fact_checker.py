@@ -1,15 +1,24 @@
 """
-Check a static transcript's factual assertions against the source of truth.
-
-Usage:
-    uv run server/fact_checker.py [path/to/transcript.txt]
-
-This is an offline stand-in for the real-time pipeline described in spec.md:
-instead of streaming audio in, we already have a full transcript file. For
-each sentence we ask the LLM whether it's a factual assertion; if so, we embed
+The fact-checking pipeline: detect a factual assertion in a sentence, embed
 it, find the closest facts in the source-of-truth vector db (built by
-process_source_of_truth.py), and ask the LLM to judge whether the assertion is
-true.
+process_source_of_truth.py), and ask the LLM to judge whether the assertion
+is true.
+
+This module can be used in two ways:
+
+1. As a library. realtime_pipeline.py imports check_sentence() (and
+   load_vector_db()) to fact-check sentences as they stream in live, and that
+   pipeline is what audio_fact_checker.py and web_server.py both run on top
+   of. This is the real-time path described in spec.md.
+
+2. As a standalone CLI, for testing the fact-checking logic offline against
+   an already-written transcript, without needing real-time audio at all:
+
+       uv run server/fact_checker.py [path/to/transcript.txt]
+
+   This reads the whole transcript, splits it into sentences, and runs each
+   one through the same check_sentence() the real-time path uses - see
+   check_transcript()/main() below.
 
 The vector db (server/embeddings.npy, server/facts.json) is built automatically
 on first use if it isn't already there - see load_vector_db() below.
@@ -25,7 +34,7 @@ import numpy as np
 
 from common import CHAT_MODEL, EMBEDDING_MODEL, get_client
 
-DEFAULT_TRANSCRIPT_PATH = "assets/test-transcription-8-25-26.txt"
+DEFAULT_TRANSCRIPT_PATH = "assets/transcription.txt"
 EMBEDDINGS_PATH = os.path.join(os.path.dirname(__file__), "embeddings.npy")
 FACTS_INDEX_PATH = os.path.join(os.path.dirname(__file__), "facts.json")
 
@@ -122,7 +131,7 @@ async def judge_assertion(client, assertion: str, candidate_facts: list[dict]) -
 def load_vector_db() -> tuple[np.ndarray, list[dict]]:
     """Load the fact embeddings and their id/text metadata, building them first if needed.
 
-    embeddings.npy/facts.json are gitignored (they're regenerable from assets/facts.csv),
+    embeddings.npy/facts.json are gitignored (they're regenerable from assets/facts.tsv),
     so a fresh checkout or deploy won't have them yet - building on first use here means
     no separate manual step is needed before running any entry point.
     """

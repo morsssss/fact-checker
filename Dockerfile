@@ -13,7 +13,7 @@ RUN uv sync --locked --no-dev --no-install-project
 # truth for facts. (Test audio/video/transcript are dev-only, not needed here.)
 COPY server/ server/
 COPY web/ web/
-COPY assets/facts.csv assets/facts.csv
+COPY assets/facts.tsv assets/facts.tsv
 
 # Most hosts (Railway, Render, Fly, Cloud Run) inject PORT themselves; this is
 # just a sane default for a plain `docker run` without one.
