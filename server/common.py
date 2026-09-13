@@ -19,15 +19,21 @@ def get_client() -> Mistral:
     return Mistral(api_key=api_key)
 
 
-def load_facts(path: str) -> list[tuple[str, str]]:
-    """Read a source-of-truth file into a list of (id, fact_text) pairs.
+def load_facts(path: str) -> list[dict]:
+    """Read a source-of-truth file into fact records.
 
-    Each non-blank line is one fact; its 1-based line number is its id.
+    Each non-blank line is tab-separated: fact text, then an optional source
+    name, then an optional source URL. Its 1-based line number is its id.
     """
     facts = []
     with open(path) as f:
-        for line_number, line in enumerate(f, start=1):
-            text = line.strip()
-            if text:
-                facts.append((str(line_number), text))
+        for line_number, raw_line in enumerate(f, start=1):
+            line = raw_line.rstrip("\n")
+            if not line.strip():
+                continue
+            fields = line.split("\t")
+            text = fields[0].strip()
+            source = fields[1].strip() if len(fields) > 1 else ""
+            url = fields[2].strip() if len(fields) > 2 else ""
+            facts.append({"id": str(line_number), "text": text, "source": source, "url": url})
     return facts

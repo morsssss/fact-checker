@@ -1,5 +1,5 @@
 """
-Stage 2: the web front end.
+The web front end
 
 Usage:
     uv run server/web_server.py

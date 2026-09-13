@@ -1,5 +1,5 @@
 """
-Stage 0: check a static transcript's factual assertions against the source of truth.
+Check a static transcript's factual assertions against the source of truth.
 
 Usage:
     uv run server/fact_checker.py [path/to/transcript.txt]
@@ -46,6 +46,16 @@ def split_into_sentences(text: str) -> list[str]:
     flat_text = " ".join(text.split())  # blank lines/wrapping -> single spaces
     sentences = SENTENCE_END_RE.split(flat_text)
     return [s.strip() for s in sentences if s.strip()]
+
+
+def capitalize_first_letter(text: str) -> str:
+    """Capitalize just the first letter, leaving the rest of the text untouched.
+
+    Detected assertions often come back lowercase (e.g. mid-sentence claims
+    pulled straight out of the transcript) - this makes them read like proper
+    sentences wherever they're displayed.
+    """
+    return text[:1].upper() + text[1:]
 
 
 async def detect_assertion(client, sentence: str) -> str | None:
@@ -98,8 +108,9 @@ async def judge_assertion(client, assertion: str, candidate_facts: list[dict]) -
                 "role": "system",
                 "content": (
                     "You fact-check a claim against a list of known facts. Reply with JSON: "
-                    '{"verdict": "true"|"false"|"likely_true"|"likely_false", "reasoning": string}. '
-                    'Use "likely_*" only when the facts do not fully settle the claim.'
+                    '{"verdict": "true"|"false"|"likely_true"|"likely_false"|"unknown", "reasoning": string}. '
+                    'Use "likely_*" when the facts are relevant but do not fully settle the claim. '
+                    'Use "unknown" when none of the given facts actually relate to the claim.'
                 ),
             },
             {"role": "user", "content": f"Claim: {assertion}\n\nKnown facts:\n{facts_block}"},
@@ -111,7 +122,7 @@ async def judge_assertion(client, assertion: str, candidate_facts: list[dict]) -
 def load_vector_db() -> tuple[np.ndarray, list[dict]]:
     """Load the fact embeddings and their id/text metadata, building them first if needed.
 
-    embeddings.npy/facts.json are gitignored (they're regenerable from assets/facts.txt),
+    embeddings.npy/facts.json are gitignored (they're regenerable from assets/facts.csv),
     so a fresh checkout or deploy won't have them yet - building on first use here means
     no separate manual step is needed before running any entry point.
     """
@@ -136,6 +147,8 @@ async def check_sentence(client, fact_embeddings: np.ndarray, facts: list[dict],
     assertion = await detect_assertion(client, sentence)
     if assertion is None:
         return None
+    
+    assertion = capitalize_first_letter(assertion)
 
     embedding_response = await client.embeddings.create_async(model=EMBEDDING_MODEL, inputs=[assertion])
     assertion_embedding = np.array(embedding_response.data[0].embedding)
@@ -151,7 +164,15 @@ async def check_sentence(client, fact_embeddings: np.ndarray, facts: list[dict],
         "matched": True,
         "verdict": verdict["verdict"],
         "reasoning": verdict["reasoning"],
-        "matches": [{"fact": fact["text"], "probability": round(score, 3)} for fact, score in matches],
+        "matches": [
+            {
+                "fact": fact["text"],
+                "source": fact.get("source", ""),
+                "url": fact.get("url", ""),
+                "probability": round(score, 3),
+            }
+            for fact, score in matches
+        ],
     }
 
 

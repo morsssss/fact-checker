@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Fact Checker</title>
+  <link rel="icon" href="favicon.png" type="image/png" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -13,8 +14,12 @@
       <span class="wordmark-text">Fact Checker</span>
     </div>
     <div class="controls">
+      <div class="tally" id="tally">
+        <span class="tally-true">True: <span id="tally-true-count">0</span></span>
+        <span class="tally-false">False: <span id="tally-false-count">0</span></span>
+      </div>
       <label for="checking-switch" class="switch-label">Fact checking</label>
-      <button type="button" role="switch" aria-checked="false" id="checking-switch" class="switch"></button>
+      <button type="button" role="switch" aria-checked="true" id="checking-switch" class="switch"></button>
     </div>
   </header>
 
@@ -36,7 +41,7 @@
     </div>
 
     <section id="results-panel">
-      <div id="results-empty">Turn on "Fact checking" above to start... checking facts!</div>
+      <div id="results-empty">Fact checks will appear here</div>
       <div id="results-list"></div>
     </section>
   </main>

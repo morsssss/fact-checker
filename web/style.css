@@ -64,6 +64,7 @@
   --red: #e51300;
   --red-dark: #c4001d;
   --green: #3ddc84;
+  --yellow: #f2c94c;
 
   --font: "ALTMistral", "Inter", sans-serif;
 
@@ -107,6 +108,11 @@ header {
   border-bottom: 1px solid var(--border);
   flex-wrap: wrap;
   gap: 16px;
+}
+
+a {
+  text-decoration: none;
+  font-weight: 600;
 }
 
 .wordmark {
@@ -161,6 +167,23 @@ button:disabled {
   background: var(--border);
   color: var(--muted);
   cursor: default;
+}
+
+.tally {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 14px;
+  margin-right: 32px;
+  border: 1px solid var(--border);
+  font-family: var(--font);
+  font-size: 18px;
+  font-weight: 200;
+  color: var(--text);
+}
+
+.tally-true, .tally-false {
+  font-weight: 800;
 }
 
 .switch-label {
@@ -270,6 +293,7 @@ main {
 
 #upload-section {
   margin-top: 60px;
+  display: none; /* hide for now */
 }
 
 .upload-button {
@@ -416,12 +440,19 @@ video {
 .badge-likely-true {
   background: var(--green);
   color: #100d0a;
+  padding: 5px 8px 3px 8px;
 }
 
 .badge-false,
 .badge-likely-false {
   background: var(--red);
   color: var(--text);
+}
+
+.badge-unknown {
+  background: var(--yellow);
+  color: #100d0a;
+  padding: 5px 8px 3px 8px;
 }
 
 .reasoning {
@@ -439,6 +470,14 @@ video {
   color: var(--orange-light);
   max-width: 60ch;
   margin: 8px 0 0;
+}
+
+.fact a {
+  color: var(--yellow);
+}
+
+.fact a:hover {
+  color: var(--orange);
 }
 
 .fact-toggle summary {
@@ -479,7 +518,6 @@ video {
    that keeps the flowers/cat band on screen without an oversized section. */
 footer {
   height: 220px;
-  margin-top: 24px;
   background-image: url("img/Footer_Dark_Mode.png");
   background-size: contain;
   background-position: bottom center;

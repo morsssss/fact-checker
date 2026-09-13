@@ -1,7 +1,7 @@
 {
-  "$schema": "https://railway.com/railway.schema.json",
+  "$schema": "https://railway.app/railway.schema.json",
   "build": {
-    "builder": "RAILPACK"
+    "builder": "NIXPACKS"
   },
   "deploy": {
     "startCommand": "uv run server/web_server.py"

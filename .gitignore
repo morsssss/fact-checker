@@ -16,15 +16,15 @@ wheels/
 server/embeddings.npy
 server/facts.json
 
-# Things we are keeping to ourselves
+# Things we used in development that we'll just kinda keep to ourselves
 .claude/
 .impeccable/
 PRODUCT.md
 spec.md
-railway.json
 
 # Testing files
 assets/ben-babbles.m4a
+testfiles/
 
 # Junque
 .DS_Store

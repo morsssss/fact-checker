@@ -9,6 +9,12 @@ const resultsList = document.getElementById("results-list");
 const resultsEmpty = document.getElementById("results-empty");
 const uploadInput = document.getElementById("video-upload-input");
 const uploadDialog = document.getElementById("upload-dialog");
+const tallyTrueCount = document.getElementById("tally-true-count");
+const tallyFalseCount = document.getElementById("tally-false-count");
+
+// Reset to 0 on every page load - there's no persistence, just these two counters.
+let trueCount = 0;
+let falseCount = 0;
 
 // The audio graph (and createMediaElementSource especially) can only be set
 // up once per <video>, so it's built lazily on the first click and then
@@ -20,6 +26,15 @@ let ws = null; // the current checking session, or null when stopped
 checkingSwitch.addEventListener("click", toggleChecking);
 
 video.addEventListener("ended", stopChecking);
+
+// The pending startChecking() call from page load is stuck waiting on this
+// resume() until a user gesture happens - scoped to the video itself (not
+// the whole page) so pressing its native play control is what unblocks it.
+video.addEventListener("play", () => {
+  if (audioContext && audioContext.state === "suspended") {
+    audioContext.resume();
+  }
+});
 
 uploadInput.addEventListener("change", uploadVideo);
 
@@ -109,7 +124,10 @@ async function startChecking() {
   socket.addEventListener("open", () => {
     socket.send(JSON.stringify({ sample_rate: audioContext.sampleRate }));
     if (video.paused) {
-      video.play(); // only kick off playback if it hadn't already started
+      // Swallowed: on page load, before any user gesture, the browser's
+      // autoplay policy rejects this - the "first gesture anywhere" listener
+      // below retries it once that gesture happens.
+      video.play().catch(() => {});
     }
     checkingSwitch.setAttribute("aria-checked", "true");
     checkingSwitch.disabled = false;
@@ -175,6 +193,12 @@ function renderResult(result) {
       <div class="badge">No match</div>
     `;
   } else {
+    if (result.verdict === "true" || result.verdict === "likely_true") {
+      tallyTrueCount.textContent = ++trueCount;
+    } else if (result.verdict === "false" || result.verdict === "likely_false") {
+      tallyFalseCount.textContent = ++falseCount;
+    }
+
     const badgeClass = `badge-${result.verdict.replace("_", "-")}`;
     const topFact = result.matches[0];
     card.innerHTML = `
@@ -190,7 +214,7 @@ function renderResult(result) {
           </svg>
           Source fact
         </summary>
-        <p class="fact">${escapeHtml(topFact.fact)}</p>
+        <p class="fact">${renderFactCitation(topFact)}</p>
       </details>
     `;
   }
@@ -200,8 +224,29 @@ function renderResult(result) {
   panel.scrollTop = panel.scrollHeight;
 }
 
+// A matched fact, plus its source in parentheses when we have one - a link
+// to it when we also have a URL, otherwise just plain text.
+function renderFactCitation(fact) {
+  let html = escapeHtml(fact.fact);
+  if (fact.source) {
+    const source = fact.url
+      ? `<a href="${escapeHtml(fact.url)}" target="_blank" rel="noopener noreferrer">(${escapeHtml(fact.source)})</a>`
+      : escapeHtml(fact.source);
+    html += ` ${source}`;
+  }
+  return html;
+}
+
 function escapeHtml(text) {
   const div = document.createElement("div");
   div.textContent = text;
   return div.innerHTML;
 }
+
+// Fact checking starts on page load rather than waiting for a click on the
+// switch. Browsers won't let a fresh AudioContext produce sound (or even run
+// its worklet) until a user gesture happens somewhere on the page, so this
+// first pass typically leaves the video paused and the context suspended
+// until the user presses play on the video themselves - at which point this
+// same pending startChecking() call picks back up and finishes connecting.
+startChecking();
