@@ -1,5 +1,8 @@
-// Captures the video's audio as it plays, streams it to our server over a
-// WebSocket, and renders fact-check results as they come back.
+/*
+ * app.js: the logic that powers the web app.
+ * Captures the video's audio as it plays, streams it to our server over a
+ * WebSocket, and renders fact-check results as they come back.
+ */
 
 const CHUNK_MS = 200; // how much audio we buffer client-side before sending
 
