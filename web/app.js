@@ -184,7 +184,12 @@ function cleanReasoning(text) {
   return stripped.charAt(0).toUpperCase() + stripped.slice(1);
 }
 
+// The video we've been testing with includes jokes, each of which generates an "unknown" case.
+// Thus for now I've suppressed "unknown"s. Feel free to add them back in!
 function renderResult(result) {
+  if (result.verdict === "unknown")
+    return;
+
   resultsEmpty.style.display = "none";
 
   const card = document.createElement("div");

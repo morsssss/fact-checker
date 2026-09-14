@@ -83,7 +83,7 @@ async def detect_assertion(client, sentence: str) -> str | None:
                     'Reply with JSON: {"contains_assertion": bool, "assertion_text": string}. '
                     "assertion_text is the specific factual claim (quoted or paraphrased from "
                     "the sentence), or an empty string if there isn't one. Greetings, opinions, "
-                    "and questions are not factual assertions."
+                    "jokes, and questions are not factual assertions."
                 ),
             },
             {"role": "user", "content": sentence},
@@ -120,6 +120,8 @@ async def judge_assertion(client, assertion: str, candidate_facts: list[dict]) -
                     '{"verdict": "true"|"false"|"likely_true"|"likely_false"|"unknown", "reasoning": string}. '
                     'Use "likely_*" when the facts are relevant but do not fully settle the claim. '
                     'Use "unknown" when none of the given facts actually relate to the claim.'
+                    "Don't be completely literal! If a small part of an assertion can't be confirmed, but"
+                    "the rest is correct, you can use 'true' or 'likely_true', not 'unknown'."
                 ),
             },
             {"role": "user", "content": f"Claim: {assertion}\n\nKnown facts:\n{facts_block}"},
